@@ -182,8 +182,10 @@ class GraphicInterface extends JFrame{
                 System.out.print(monthData[j][k] + " " );
             System.out.println();
         }
-
-
+        String[] Months = {"January","February","March","April","May","June","July","August","September","October","November","December"};
+        JTextField Month = new JTextField(Months[d.getMonth()]);
+        Month.setFont(new Font("TimesRoman",Font.PLAIN,20));
+        Month.isEnabled();
         JTable Calendar =  new JTable(monthData,weekColumn);
         Calendar.setRowHeight(54);
         Calendar.setBounds(30,280,400,400);
@@ -244,15 +246,16 @@ class GraphicInterface extends JFrame{
         });
         littleFrame.add(prevMonthButton);
         littleFrame.add(nextMonthButton);
+        littleFrame.add(Month);
         Calendar.getTableHeader().setReorderingAllowed(false);
        try {
             Image img1 = ImageIO.read(new File("library/leftArrow.png"));
             prevMonthButton.setIcon(new ImageIcon(img1));
-            prevMonthButton.setPreferredSize(new Dimension(200,50));
+            prevMonthButton.setPreferredSize(new Dimension(150,50));
             prevMonthButton.setVisible(true);
             Image img = ImageIO.read(new File("library/rightArrow.png"));
             nextMonthButton.setIcon(new ImageIcon(img));
-            nextMonthButton.setPreferredSize(new Dimension(200,50));
+            nextMonthButton.setPreferredSize(new Dimension(150,50));
             nextMonthButton.setVisible(true);
             littleFrame.getContentPane().add(nextMonthButton);
 
@@ -268,16 +271,59 @@ class GraphicInterface extends JFrame{
         String mysqlDate = new String((d.getYear()+1900) + "-" + String.valueOf(d.getMonth()) + "-" + day.toString());
         JFrame DayFrame = new JFrame(String.valueOf((d.getYear()+1900) + " " + String.valueOf(d.getMonth()) + " " + day.toString()));
         DayFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        DayFrame.setBounds(300,0,1000,1000);
+        DayFrame.setBounds(300,0,600,600);
         JTextField newEvent = new JTextField();
         try {
             Connection myConn = DriverManager.getConnection("jdbc:mysql://localhost:3306/agenda", "root", "Date3241");
-            Statement myStatement = myConn.createStatement();
-            ResultSet myResult = myStatement.executeQuery("select * from agenda.agenda where startDate < " +mysqlDate + " and endDate > " + mysqlDate);
+            Statement myStatement = myConn.createStatement(1,7);
+            //ResultSet myResult = myStatement.executeQuery("select * from agenda.agenda where startDate < " +mysqlDate + " and endDate > " + mysqlDate);
+            ResultSet myResult = myStatement.executeQuery("SELECT * FROM agenda.agenda");
             JTextField oldEvents = new JTextField(myResult.toString());
-            DayFrame.add(oldEvents);
+            JLabel dayLabel = new JLabel();
+            dayLabel.setText("<html>");
+            JLabel placeLabel = new JLabel();
+            JLabel commentaryLabel = new JLabel();
+            JLabel activityTypeLabel = new JLabel();
+            placeLabel.setText("<html>");
+            commentaryLabel.setText("<html>");
+            activityTypeLabel.setText("<html>");
 
-
+            while(myResult.next()) {
+                Date databaseDate = myResult.getDate(2);
+                if(databaseDate.getMonth() == d.getMonth() && databaseDate.getDay() == d.getDay()) {
+                    dayLabel.setText(dayLabel.getText() + "<br/" + myResult.getDate(2).toString());
+                    placeLabel.setText(placeLabel.getText()+"<br/>" + myResult.getString(4));
+                    commentaryLabel.setText(commentaryLabel.getText() + "<br/>"+myResult.getString(5));
+                    activityTypeLabel.setText(activityTypeLabel.getText()+"<br/>"+myResult.getString(6));
+                }
+            }
+            dayLabel.setText(dayLabel.getText() + "</html>");
+            placeLabel.setText(placeLabel.getText()+"</html>");
+            commentaryLabel.setText(commentaryLabel.getText()+"</html>");
+            activityTypeLabel.setText(activityTypeLabel.getText()+"</html>");
+            DayFrame.setLayout(null);
+            DayFrame.add(dayLabel);
+            DayFrame.add(placeLabel);
+            DayFrame.add(commentaryLabel);
+            DayFrame.add(activityTypeLabel);
+            Label top1 = new Label(), top2 = new Label(), top3 = new Label(),top4 = new Label();
+            DayFrame.add(top1);
+            DayFrame.add(top2);
+            DayFrame.add(top3);
+            DayFrame.add(top4);
+            top1.setText("Day");top2.setText("Place"); top3.setText("Comment");top4.setText("Activity Type");
+            top1.setBounds(0,0,100,100);
+            top2.setBounds(100,0,100,100);
+            top3.setBounds(200,0,100,100);
+            top4.setBounds(300,0,100,100);
+            dayLabel.setBounds(0,100,100,100);
+            placeLabel.setBounds(100,100,100,100);
+            commentaryLabel.setBounds(200,100,100,100);
+            activityTypeLabel.setBounds(300,100,100, 100);
+            JButton addEventButton = new JButton();
+            addEventButton.setText("Add event");
+            DayFrame.add(addEventButton);
+            addEventButton.setBounds(500,500,100,50);
         } catch (SQLException e) {
             e.printStackTrace();
         }
